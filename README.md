@@ -7,7 +7,6 @@
 <div align="center">
   <picture>
     <img width="1313" height="614" alt="img" src="https://github.com/user-attachments/assets/f6960cfa-e2cd-45ad-9102-76e82a47992f" />
-    <img src="img.png" alt="scheme dc-smart-light" style="width: 60%; margin-top: 5px; margin-bottom: 1px;">
   </picture>
 </div>
 
