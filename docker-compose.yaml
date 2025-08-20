@@ -1,0 +1,128 @@
+version: "3.9"
+
+services:
+  # ========================
+  # Databases
+  # ========================
+  postgres-exchanger:
+    image: postgres:15
+    container_name: postgres-exchanger
+    restart: always
+    environment:
+      POSTGRES_USER: exchanger
+      POSTGRES_PASSWORD: exchanger_pass
+      POSTGRES_DB: exchanger_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-exchanger:/var/lib/postgresql/data
+      - ./exchanger/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  postgres-wallet:
+    image: postgres:15
+    container_name: postgres-wallet
+    restart: always
+    environment:
+      POSTGRES_USER: wallet
+      POSTGRES_PASSWORD: wallet_pass
+      POSTGRES_DB: wallet_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata-wallet:/var/lib/postgresql/data
+      - ./wallet/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  mongodb:
+    image: mongo:6
+    container_name: mongo-notification
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: redis-cache
+    restart: always
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+  # ========================
+  # Kafka & Zookeeper
+  # ========================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # ========================
+  # Services
+  # ========================
+  gw-exchanger:
+    build: ./gw-exchanger
+    container_name: gw-exchanger
+    restart: on-failure
+    env_file:
+      - ./gw-exchanger/config.env
+    depends_on:
+      - postgres-exchanger
+    ports:
+      - "50051:50051" # gRPC порт
+
+  gw-currency-wallet:
+    build: ./gw-currency-wallet
+    container_name: gw-currency-wallet
+    restart: on-failure
+    env_file:
+      - ./gw-currency-wallet/config.env
+    depends_on:
+      - postgres-wallet
+      - gw-exchanger
+      - kafka
+      - redis
+    ports:
+      - "8080:8080" # REST API
+
+  gw-notification:
+    build: ./gw-notification
+    container_name: gw-notification
+    restart: on-failure
+    env_file:
+      - ./gw-notification/config.env
+    depends_on:
+      - kafka
+      - mongodb
+
+# ========================
+# Volumes
+# ========================
+volumes:
+  pgdata-exchanger:
+  pgdata-wallet:
+  mongo-data:
+  redis-data:

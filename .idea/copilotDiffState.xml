@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/gw-currency-wallet/internal/storages/storage.go">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/gw-currency-wallet/internal/storages/storage.go" />
+              <option name="originalContent" value="package storages&#10;&#10;import &quot;context&quot;&#10;&#10;type Storage interface {&#10;&#9;CreateUser(ctx context.Context, username, email, passwordHash string) error&#10;&#9;GetUserByUsername(ctx context.Context, username string) (*User, error)&#10;&#9;GetUserByID(ctx context.Context, id int) (*User, error)&#10;&#10;&#9;GetWallets(ctx context.Context, userID int) ([]Wallet, error)&#10;&#9;UpdateBalance(ctx context.Context, userID int, currency string, amount float64) error&#10;&#10;&#9;CreateTransaction(ctx context.Context, userID int, txType string, amount float64, currency string) error&#10;}&#10;" />
+              <option name="updatedContent" value="package storages&#10;&#10;import &quot;context&quot;&#10;&#10;type Storage interface {&#10;&#9;CreateUser(ctx context.Context, username, email, passwordHash string) error&#10;&#9;GetUserByUsername(ctx context.Context, username string) (*User, error)&#10;&#9;GetUserByID(ctx context.Context, id int) (*User, error)&#10;&#10;&#9;GetWallets(ctx context.Context, userID int) ([]Wallet, error)&#10;&#9;UpdateBalance(ctx context.Context, userID int, currency string, amount float64) error&#10;&#10;&#9;CreateTransaction(ctx context.Context, userID int, txType string, amount float64, currency string) error&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
