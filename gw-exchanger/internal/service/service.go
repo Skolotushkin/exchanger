@@ -31,11 +31,19 @@ func (s *ExchangerService) GetExchangeRates(ctx context.Context, _ *pb.Empty) (*
 }
 
 func (s *ExchangerService) GetExchangeRateForCurrency(ctx context.Context, req *pb.CurrencyRequest) (*pb.ExchangeRateResponse, error) {
-	rate, err := s.storage.GetRate(ctx, req.FromCurrency, req.ToCurrency)
+	fromRate, err := s.storage.GetRate(ctx, req.FromCurrency)
 	if err != nil {
-		s.logger.Warn("rate not found", zap.String("from", req.FromCurrency), zap.String("to", req.ToCurrency))
+		s.logger.Warn("rate not found", zap.String("from", req.FromCurrency))
 		return nil, err
 	}
+	toRate, err := s.storage.GetRate(ctx, req.ToCurrency)
+	if err != nil {
+		s.logger.Warn("rate not found", zap.String("to", req.ToCurrency))
+		return nil, err
+	}
+
+	// Пересчёт через USD
+	rate := toRate / fromRate
 
 	return &pb.ExchangeRateResponse{
 		FromCurrency: req.FromCurrency,

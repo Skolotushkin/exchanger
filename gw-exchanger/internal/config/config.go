@@ -27,7 +27,7 @@ type Config struct {
 // LoadConfig загружает конфигурацию с приоритетом: файл -> env vars -> defaults
 func LoadConfig() (*Config, error) {
 	// Парсим флаги командной строки
-	configPath := flag.String("config", "", "path to config file (optional)")
+	configPath := flag.String("c", "", "path to config file (optional)")
 	flag.Parse()
 
 	// Инициализируем Viper

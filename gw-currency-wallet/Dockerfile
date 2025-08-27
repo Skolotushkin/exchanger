@@ -23,6 +23,6 @@ WORKDIR /root/
 COPY --from=builder /app/main .
 COPY config.env .
 
-EXPOSE 50051
+EXPOSE 8080
 
 CMD ["./main", "-c", "config.env"]

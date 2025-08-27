@@ -16,7 +16,7 @@ services:
       - "5433:5432"
     volumes:
       - pgdata-exchanger:/var/lib/postgresql/data
-      - ./exchanger/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./gw-exchanger/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   postgres-wallet:
     image: postgres:15
@@ -30,7 +30,7 @@ services:
       - "5434:5432"
     volumes:
       - pgdata-wallet:/var/lib/postgresql/data
-      - ./wallet/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./gw-currency-wallet/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   mongodb:
     image: mongo:6
