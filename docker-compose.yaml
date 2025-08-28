@@ -80,6 +80,20 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: always
+    ports:
+      - "8085:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      # KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      - kafka
+      - zookeeper
+
   # ========================
   # Services
   # ========================
@@ -115,8 +129,10 @@ services:
     env_file:
       - ./gw-notification/config.env
     depends_on:
-      - kafka
-      - mongodb
+      kafka:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
 
 # ========================
 # Volumes
