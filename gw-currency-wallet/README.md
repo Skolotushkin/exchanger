@@ -239,3 +239,65 @@ URL: /api/v1/exchange
   "error": "Insufficient funds or invalid currencies"
 }
 ```
+
+## Примеры `curl` запросов для тестирования API
+
+### 1. Регистрация пользователя
+
+curl -X POST http://localhost:8080/api/v1/auth/register \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "test@example.com",
+  "password": "password123"
+}'
+
+### 2. Авторизация пользователя
+
+curl -X POST http://localhost:8080/api/v1/auth/login \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "test@example.com",
+  "password": "password123"
+}'
+Ответ вернет JWT токен, его нужно использовать в последующих запросах.
+
+### 3. Получение баланса пользователя
+
+curl -X GET http://localhost:8080/api/v1/wallet/balance \
+-H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+### 4. Пополнение счета
+
+curl -X POST http://localhost:8080/api/v1/wallet/deposit \
+-H "Authorization: Bearer YOUR_JWT_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "amount": "100.00",
+  "currency": "USD"
+}'
+
+### 5. Вывод средств
+
+curl -X POST http://localhost:8080/api/v1/wallet/withdraw \
+-H "Authorization: Bearer YOUR_JWT_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "amount": "50.00",
+  "currency": "USD"
+}'
+
+### 6. Получение курса валют
+
+curl -X GET http://localhost:8080/api/v1/exchange/rates \
+-H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+### 7. Обмен валют
+
+curl -X POST http://localhost:8080/api/v1/exchange \
+-H "Authorization: Bearer YOUR_JWT_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "from_currency": "USD",
+  "to_currency": "EUR",
+  "amount": "100.00"
+}'
