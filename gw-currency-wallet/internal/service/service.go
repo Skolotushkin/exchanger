@@ -31,6 +31,27 @@ type WalletService interface {
 	Withdraw(c context.Context, userID uuid.UUID, currency string, amount decimal.Decimal) (models.WalletResponse, error)
 }
 
+// для моков
+type UserStorage interface {
+	CreateUser(ctx context.Context, user models.UserRegister) error
+	GetUserByEmail(ctx context.Context, email string) (models.User, error)
+}
+
+type WalletStorage interface {
+	GetBalance(ctx context.Context, userID uuid.UUID) (models.WalletResponse, error)
+	Deposit(ctx context.Context, userID uuid.UUID, currency string, amount decimal.Decimal) (models.WalletResponse, uuid.UUID, error)
+	Withdraw(ctx context.Context, userID uuid.UUID, currency string, amount decimal.Decimal) (models.WalletResponse, uuid.UUID, error)
+}
+
+type ExchangeStorage interface {
+	Exchange(ctx context.Context, userID uuid.UUID, fromCurrency, toCurrency string, amount, exchangedAmount decimal.Decimal) (models.WalletResponse, uuid.UUID, error)
+}
+
+type JWTManager interface {
+	GenerateToken(userID uuid.UUID, email string) (string, error)
+	ParseToken(token string) (*models.Claims, error)
+}
+
 type Service struct {
 	AuthService
 	ExchangeService

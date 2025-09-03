@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"gw-currency-wallet/internal/storage"
 	cache "gw-currency-wallet/internal/storage/cache"
 	"time"
 
@@ -25,7 +24,7 @@ type exchangeService struct {
 	exClient *grpc.ExchangeClient
 	cache    cache.Cache
 	logger   *zap.Logger
-	storage  *storage.Storage
+	storage  ExchangeStorage
 	kafka    *kafka.Producer
 }
 
@@ -33,7 +32,7 @@ func NewExchangeService(
 	exClient *grpc.ExchangeClient,
 	cache cache.Cache,
 	logger *zap.Logger,
-	storage *storage.Storage,
+	storage ExchangeStorage,
 	kafka *kafka.Producer,
 ) ExchangeService {
 	return &exchangeService{

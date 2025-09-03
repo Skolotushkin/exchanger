@@ -3,8 +3,9 @@ package postgres_test
 import (
 	"context"
 	"errors"
-	"go.uber.org/zap"
 	"testing"
+
+	"go.uber.org/zap"
 
 	"github.com/google/uuid"
 	"github.com/pashagolub/pgxmock"
@@ -94,7 +95,16 @@ func TestDeposit(t *testing.T) {
 	mock.ExpectExec(`INSERT INTO wallets`).
 		WithArgs(uid, currency, amount).
 		WillReturnResult(pgxmock.NewResult("INSERT", 1))
+	// ожидание вставки транзакции (UUID транзакции - любой аргумент)
+	mock.ExpectExec(`INSERT INTO transactions`).
+		WithArgs(pgxmock.AnyArg(), uid, models.TransactionDeposit, currency, amount).
+		WillReturnResult(pgxmock.NewResult("INSERT", 1))
 	mock.ExpectCommit()
+	// ожидание GetBalance
+	rows := pgxmock.NewRows([]string{"currency", "balance"}).AddRow(currency, amount)
+	mock.ExpectQuery(`SELECT currency, balance FROM wallets WHERE user_id`).
+		WithArgs(uid).
+		WillReturnRows(rows)
 
 	_, _, err := st.Deposit(ctx, uid, currency, amount)
 	assert.NoError(t, err)
@@ -123,9 +133,18 @@ func TestWithdraw(t *testing.T) {
 	// успешный withdraw
 	mock.ExpectBegin()
 	mock.ExpectExec(`UPDATE wallets SET balance = balance -`).
-		WithArgs(amount, uid, currency).
+		WithArgs(uid, currency, amount).
 		WillReturnResult(pgxmock.NewResult("UPDATE", 1))
+	// транзакция
+	mock.ExpectExec(`INSERT INTO transactions`).
+		WithArgs(pgxmock.AnyArg(), uid, models.TransactionWithdraw, currency, amount).
+		WillReturnResult(pgxmock.NewResult("INSERT", 1))
 	mock.ExpectCommit()
+	// GetBalance
+	rows := pgxmock.NewRows([]string{"currency", "balance"}).AddRow(currency, decimal.NewFromInt(0))
+	mock.ExpectQuery(`SELECT currency, balance FROM wallets WHERE user_id`).
+		WithArgs(uid).
+		WillReturnRows(rows)
 
 	_, _, err := st.Withdraw(ctx, uid, currency, amount)
 	assert.NoError(t, err)
@@ -133,7 +152,7 @@ func TestWithdraw(t *testing.T) {
 	// недостаточно средств
 	mock.ExpectBegin()
 	mock.ExpectExec(`UPDATE wallets SET balance = balance -`).
-		WithArgs(amount, uid, currency).
+		WithArgs(uid, currency, amount).
 		WillReturnError(errors.New("insufficient funds"))
 	mock.ExpectRollback()
 
@@ -154,12 +173,20 @@ func TestExchange(t *testing.T) {
 	// успешный обмен
 	mock.ExpectBegin()
 	mock.ExpectExec(`UPDATE wallets SET balance = balance -`).
-		WithArgs(amount, uid, from).
+		WithArgs(uid, from, amount).
 		WillReturnResult(pgxmock.NewResult("UPDATE", 1))
 	mock.ExpectExec(`INSERT INTO wallets`).
 		WithArgs(uid, to, exchanged).
 		WillReturnResult(pgxmock.NewResult("INSERT", 1))
+	mock.ExpectExec(`INSERT INTO transactions`).
+		WithArgs(pgxmock.AnyArg(), uid, models.TransactionExchange, from, amount, to, exchanged).
+		WillReturnResult(pgxmock.NewResult("INSERT", 1))
 	mock.ExpectCommit()
+	// GetBalance
+	rows := pgxmock.NewRows([]string{"currency", "balance"}).AddRow(to, exchanged)
+	mock.ExpectQuery(`SELECT currency, balance FROM wallets WHERE user_id`).
+		WithArgs(uid).
+		WillReturnRows(rows)
 
 	_, _, err := st.Exchange(ctx, uid, from, to, amount, exchanged)
 	assert.NoError(t, err)
@@ -167,7 +194,7 @@ func TestExchange(t *testing.T) {
 	// ошибка — недостаточно средств
 	mock.ExpectBegin()
 	mock.ExpectExec(`UPDATE wallets SET balance = balance -`).
-		WithArgs(amount, uid, from).
+		WithArgs(uid, from, amount).
 		WillReturnError(errors.New("insufficient funds"))
 	mock.ExpectRollback()
 

@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"gw-currency-wallet/internal/storage"
-
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -13,12 +11,12 @@ import (
 )
 
 type walletService struct {
-	storage *storage.Storage
+	storage WalletStorage
 	logger  *zap.Logger
 	kafka   *kafka.Producer
 }
 
-func NewWalletService(storage *storage.Storage, logger *zap.Logger, kafka *kafka.Producer) WalletService {
+func NewWalletService(storage WalletStorage, logger *zap.Logger, kafka *kafka.Producer) WalletService {
 	return &walletService{storage: storage, logger: logger, kafka: kafka}
 }
 

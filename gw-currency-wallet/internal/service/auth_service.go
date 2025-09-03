@@ -7,18 +7,16 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 
-	"gw-currency-wallet/internal/storage"
 	"gw-currency-wallet/internal/storage/models"
-	"gw-currency-wallet/pkg/utils"
 )
 
 type authService struct {
-	storage    *storage.Storage
+	storage    UserStorage
 	logger     *zap.Logger
-	jwtManager *utils.JWTManager
+	jwtManager JWTManager
 }
 
-func NewAuthService(storage *storage.Storage, logger *zap.Logger, jwtManager *utils.JWTManager) AuthService {
+func NewAuthService(storage UserStorage, logger *zap.Logger, jwtManager JWTManager) AuthService {
 	return &authService{storage: storage, logger: logger, jwtManager: jwtManager}
 }
 
